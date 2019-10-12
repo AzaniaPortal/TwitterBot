@@ -1,39 +1,39 @@
 package twitterbot;
 
-
 import java.io.IOException;
 
 import twitter4j.FilterQuery;
+import twitter4j.MediaEntity;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.TwitterStream;
+import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import twitterbot.controller.SendToAPI;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import twitter4j.StatusUpdate;
 import twitter4j.TwitterStreamFactory;
+import twitter4j.auth.AccessToken;
 
 public final class App {
+
 	Twitter twitter;
 	TwitterFactory twitterFactory;
 	TwitterStream twitterStream;
-
-	/**
-	 * Says hello to the world.
-	 * 
-	 * @param args The arguments of the program.
-	 */
+	
 	public static void main(String[] args) {
 		App app = new App();
 		app.initConfig();
 		app.listenOnTweets();
-
 	}
 
 	public void initConfig() {
 		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+	
 		configurationBuilder.setDebugEnabled(true).setOAuthConsumerKey("5aQQf9IJWNZBv3qa1Bu7YeYzg")
 				.setOAuthConsumerSecret("NJbAHyOH2guZ7VQL0b8RkWfaru7A2QismCUJTCoG5L0rYFGfvR")
 				.setOAuthAccessToken("934531542659067905-ntEVbyIyXvlEE904TJcgKCsMYyBiwS6")
@@ -49,7 +49,8 @@ public final class App {
 
 			@Override
 			public void onException(Exception ex) {
-				System.out.println("ERRRORR: " + ex);
+				//System.out.println("ERRRORR Tweet Exception: " + ex.printStackTrace());
+				ex.printStackTrace();
 			}
 
 			@Override
@@ -59,16 +60,26 @@ public final class App {
 
 			@Override
 			public void onStatus(Status status) {
-				String theStatus = status.getText().toUpperCase();
-
+				String imageUrl = "no-image";
+				
 				System.out.println("\n\n------------- NEW TWEET -----------------");
-				System.out.println("USERS INFO:" + "\nUser ID: " + status.getUser().getId() + "\nUser Handle: "
+				
+				for(MediaEntity me : status.getMediaEntities()){
+					if(me.getMediaURLHttps() != null)
+						imageUrl = me.getMediaURLHttps();
+				}
+				
+				System.out.println("USERS INFO:" + "\nUser ID: " + status.getUser().getId() 
+					+ "\nUser Handle: "
 						+ status.getUser().getName() + "\nTweet TimeStamp: " + status.getCreatedAt() + "\nTweet Id: "
-						+ status.getId() + "\nTweet Location: " + status.getGeoLocation() + "\nTweet Image: "
-						+ status.getMediaEntities() + "\n\nActual Tweet: " + status.getText()
+						+ status.getId() + "\nTweet Location: " + "\n\nActual Tweet: " + status.getText()
 
 				);
+				
 				System.out.println("\n\n------------- END TWEET -----------------");
+				
+				//process the tweet
+				processTweet(status.getText(), status.getUser().getName(), status.getUser().getScreenName(), imageUrl, status.getId());
 			}
 
 			@Override
@@ -97,19 +108,84 @@ public final class App {
 	}
 
 	/**
-	 * Process Tweet to get into to send to the API
+	 * 
+	 * @param tweet the tweet body
+	 * @param reporter twitter handle
+	 * @param imageLink image link to the missing persons profile
 	 */
-	public void processTweet(String tweet) {
+	public void processTweet(String tweet, String reportersName ,String reporter, String imageLink, long tweetId) {
 
-		
+		String name, location, date, description;
+		//String tweetSample = "John Doe-Fairland, Randburg-2019/10/12-He was wearing a white suit, sources say he might be john wicks evil brother #ThanosTadhack2019".replace("#ThanosTadhack2019", "");
+
+		String tweet_data[] = tweet.split("-");
+		name = tweet_data[0];
+		location = tweet_data[1];
+		date = tweet_data[2].replaceAll("/", "-");
+		description = tweet_data[3];
 
 		try {
-			SendToAPI.sendData("Josiah Thobejane", "JosiahThobejane", "Randburg, South Africa", "2019-101-12",
-					"https://pbs.twimg.com/media/EGrXEVjXUAINpeh.jpg", "omg heeeeesss misssingg!!!!");
+			if(location == null) {location = "South Africa";}
+			SendToAPI.sendData(name, reportersName ,reporter, location, date, imageLink, description, tweetId);
+			
+			/*SendToAPI.sendData("Josiah Thobejane", "JosiahThobejane", "Randburg, South Africa", "2019-101-12",
+					"https://pbs.twimg.com/media/EGrXEVjXUAINpeh.jpg", "omg heeeeesss misssingg!!!!", 333222);
+		*/
+			System.out.println("DATA MUST HAVE BEEN SENT");
 		} catch (IOException e) {
 			
 			e.printStackTrace();
 		}
+		}
+
+		/**
+		 * 
+		 * @param inReplyToStatusId
+		 * @param usersTwitterHandle
+		 * @param responseCode
+		 * @param responseStatus
+		 * @throws TwitterException
+		 */
+		public void reply(long inReplyToStatusId, String usersTwitterHandle, int responseCode, String responseStatus, String missingPersonName)
+		{
+
+			if(responseCode == 200 && responseStatus.equals("success")) 
+			{
+				replyToPerson(inReplyToStatusId, "Hey @" + usersTwitterHandle  + "," + missingPersonName + " has been reported :) Get their missing report link here:");
+			} else if (responseCode == 200 && responseStatus.equals("failed")) 
+			{
+				replyToPerson(inReplyToStatusId, "Hi @" + usersTwitterHandle + "," + missingPersonName + " has already been reported sorry.");
+			} else {
+				replyToPerson(inReplyToStatusId, "Hi @" + usersTwitterHandle + ", something has went wrong");
+			}
+			
+		}
+
+		/**
+		 * 
+		 * @param inReplyToStatusId
+		 * @param usersTwitterHandle
+		 */
+		public void replyToPerson(long inReplyToStatusId, String reply_text) {
+
+			ConfigurationBuilder configurationBuilderTwitterFactory = new ConfigurationBuilder();
+			configurationBuilderTwitterFactory.setDebugEnabled(true).setOAuthConsumerKey("5aQQf9IJWNZBv3qa1Bu7YeYzg")
+			.setOAuthConsumerSecret("NJbAHyOH2guZ7VQL0b8RkWfaru7A2QismCUJTCoG5L0rYFGfvR")
+			.setOAuthAccessToken("934531542659067905-ntEVbyIyXvlEE904TJcgKCsMYyBiwS6")
+			.setOAuthAccessTokenSecret("CxwS47IUc3wbXQryUus6qrLrJdXJ1iu2gnHoT0PqTDQQx");
+
+			twitterFactory = new TwitterFactory(configurationBuilderTwitterFactory.build());
+			twitter = twitterFactory.getInstance();
+				StatusUpdate statusReply = new StatusUpdate(reply_text);
+				statusReply.setInReplyToStatusId(inReplyToStatusId);
+				
+				try {
+					Status status = twitter.showStatus(inReplyToStatusId);
+        			Status reply = twitter.updateStatus(new StatusUpdate(reply_text).inReplyToStatusId(status.getId()));
+					//twitter.updateStatus(statusReply);
+				} catch (TwitterException ex) {
+					ex.printStackTrace();
+				}
 		}
 
 }

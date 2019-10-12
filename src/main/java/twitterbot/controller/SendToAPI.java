@@ -1,21 +1,21 @@
 package twitterbot.controller;
 
+import java.io.Console;
 import java.io.IOException;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 
 import okhttp3.Call;
 import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import twitterbot.*;
 
 public class SendToAPI {
 		
-	final String API_END_POINT = "";
-  static OkHttpClient okHttpClient = new OkHttpClient();
+	final static String API_END_POINT = "http://df4165ae.ngrok.io/api/report";
+	static OkHttpClient okHttpClient = new OkHttpClient();
+	static App mainApp = new App();
 	
    /**
 		* 
@@ -26,29 +26,56 @@ public class SendToAPI {
 		* @param image image of the image
 		* @param description description of the person who went missing
 		* @throws IOException
-	  */
-	public static void sendData(String name, String reporter, String location, String date, String image, String description) throws IOException {
+		*/
+		
+	public static void sendData(String name, String reportersName ,String reporter, String location, String date, String image, String description, long tweetId) throws IOException {
 
 		//create a json request body 
 		final RequestBody requestBody = new FormBody.Builder()
 			.add("name", name)
-			.add("reporter", reporter)
+			.add("reporter", "@"+reporter)
 			.add("location", location)
 			.add("date", date)
 			.add("image", image)
 			.add("description", description)
-			.build();
+			.build();	
 
 		//build the request
 		final Request request = new Request.Builder()
 			.url(API_END_POINT)
-			.put(requestBody)
+			.post(requestBody)
+			.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm8iOiJhcGkiLCJpc3MiOiIxIiwiZXhwIjoxNjAyNTIyNjU3LCJzdWIiOiIiLCJhdWQiOiIifQ.EgC6c4TLcgnvPyVMskDXYouCM8dCACunAPcMS6_EtMk")
+			.addHeader("Content-Type", "application/json")
 			.build();
 
 		//make the call to the api
 		final Call call = okHttpClient.newCall(request);
 		final Response response = call.execute();
+		switch(response.code()) 
+		{
+			case 200: 
+				System.out.println("The person has been added: 200");
+				System.out.println(tweetId);
+				System.out.println(reporter);
+				System.out.println(name);
+				mainApp.reply(tweetId, reporter, 200, "success", name);
+				break;
+			case 422: 
+			System.out.println("The person has been found: 422");
+			System.out.println(tweetId);
+			System.out.println(reporter);
+			System.out.println(name);
+			mainApp.reply(tweetId, reporter, 200, "success", name);
+			break;
+			case 404:
+				System.out.println("Our API is currently down");
+				break;
+			default:
+				mainApp.reply(tweetId, reporter, 404, "failed", name);
+				break;
+		}
 		System.out.println("The Response: " + response);
-
+		
+	
 	}
 }
