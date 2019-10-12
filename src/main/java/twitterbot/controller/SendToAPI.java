@@ -13,7 +13,7 @@ import twitterbot.*;
 
 public class SendToAPI {
 		
-	final static String API_END_POINT = "http://df4165ae.ngrok.io/api/report";
+	final static String API_END_POINT = "https://thanos.fortresswire.com/api/report";
 	static OkHttpClient okHttpClient = new OkHttpClient();
 	static App mainApp = new App();
 	
@@ -44,7 +44,7 @@ public class SendToAPI {
 		final Request request = new Request.Builder()
 			.url(API_END_POINT)
 			.post(requestBody)
-			.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm8iOiJhcGkiLCJpc3MiOiIxIiwiZXhwIjoxNjAyNTIyNjU3LCJzdWIiOiIiLCJhdWQiOiIifQ.EgC6c4TLcgnvPyVMskDXYouCM8dCACunAPcMS6_EtMk")
+			.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm8iOiJhcGkiLCJpc3MiOiIxIiwiZXhwIjoxNjAyNTM5NzExLCJzdWIiOiIiLCJhdWQiOiIifQ.xUmfdDYOJ39VKFhOOfcbnd3SngTNNPHnlG4Rk7qosaM")
 			.addHeader("Content-Type", "application/json")
 			.build();
 
