@@ -16,15 +16,15 @@ public class SendToAPI {
 	static App mainApp = new App();
 	
    /**
-		* 
-		* @param name name of the lost person
-		* @param reporter twitter handle of the person who reported the missing person
-		* @param location last known location of the missing person
-		* @param date last seen date of the missing person
-		* @param image image of the image
-		* @param description description of the person who went missing
-		* @throws IOException
-		*/
+	* 
+	* @param name name of the lost person
+	* @param reporter twitter handle of the person who reported the missing person
+	* @param location last known location of the missing person
+	* @param date last seen date of the missing person
+	* @param image image of the image
+	* @param description description of the person who went missing
+	* @throws IOException
+	*/
 		
 	public static void sendData(String name, String reportersName ,String reporter, String location, String date, String image, String description, long tweetId) throws IOException {
 
@@ -64,8 +64,8 @@ public class SendToAPI {
 				mainApp.reply(tweetId, reporter, 404, "failed", name);
 				break;
 		}
-		System.out.println("The Response: " + response);
-		
-	
+
+		//close connection to avoid memory leak
+		response.close();
 	}
 }
