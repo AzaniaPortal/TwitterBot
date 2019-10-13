@@ -1,19 +1,63 @@
 package twitterbot.controller;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.Call;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import twitterbot.*;
 
 public class SendToAPI {
 		
-	final static String API_END_POINT = "https://thanos.fortresswire.com/api/report";
-	static OkHttpClient okHttpClient = new OkHttpClient();
 	static App mainApp = new App();
+	
+	final static String API_END_POINT = "https://thanos.fortresswire.com/api/report";
+	static OkHttpClient okHttpClient = new OkHttpClient()
+	.newBuilder()
+    .connectTimeout(20,TimeUnit.SECONDS)
+    .writeTimeout(20,TimeUnit.SECONDS)
+    .readTimeout(30,TimeUnit.SECONDS)
+	.build();
+
+	/**
+	 * 
+	 * @param message
+	 * @param number
+	 */
+	public static void sendSMS(String message, String number) {
+		//https://tadhackapi.azurewebsites.net/api/v1/public/sendotp?username=gift&password=Neo&apitoken=eff4891f43b24534376147ca02b49dbe
+		HttpUrl HttpUrl = new HttpUrl.Builder()
+			.scheme("https")
+			.host("tadhackapi.azurewebsites.net")
+			.addPathSegment("api/v1/public/sendotp")
+			.addQueryParameter("username", "Neo")
+			.addQueryParameter("password", "Neo")
+			.addQueryParameter("apitoken", "eff4891f43b24534376147ca02b49dbe")
+			.build();
+
+		final RequestBody requestBody = new FormBody.Builder()
+			.add("smsMessages", "We are testing")
+			.add("cellPhoneNumbers", "+27810759538")
+			.build();
+
+		Request request = new Request.Builder()
+			.url(HttpUrl)
+			.addHeader("Accept", "application/json")
+			.post(requestBody)
+			.build();
+		final Call call = okHttpClient.newCall(request);
+		try {
+			final Response response = call.execute();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
    /**
 	* 
@@ -28,8 +72,13 @@ public class SendToAPI {
 		
 	public static void sendData(String name, String reportersName ,String reporter, String location, String date, String image, String description, long tweetId) throws IOException {
 
+		// okHttpClient.setConnectTimeout(30, TimeUnit.SECONDS);
+    	// okHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
+    	// okHttpClient.setWriteTimeout(30, TimeUnit.SECONDS);
+		
 		//create a json request body 
 		final RequestBody requestBody = new FormBody.Builder()
+			.add("tweet_id", Long.toString(tweetId))
 			.add("name", name)
 			.add("reporter", "@"+reporter)
 			.add("location", location)
@@ -42,11 +91,12 @@ public class SendToAPI {
 		final Request request = new Request.Builder()
 			.url(API_END_POINT)
 			.post(requestBody)
-			.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm8iOiJhcGkiLCJpc3MiOiIxIiwiZXhwIjoxNjAyNTM5NzExLCJzdWIiOiIiLCJhdWQiOiIifQ.xUmfdDYOJ39VKFhOOfcbnd3SngTNNPHnlG4Rk7qosaM")
+			.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm8iOiJhcGkiLCJpc3MiOiIxIiwiZXhwIjoxNjAyNTg1MzczLCJzdWIiOiIiLCJhdWQiOiIifQ.HG9gE_VEqOOJdVDudNlXArgLnN7qoJmonn9Qbe08H3Q")
 			.addHeader("Content-Type", "application/json")
 			.build();
 
 		//make the call to the api
+
 		final Call call = okHttpClient.newCall(request);
 		final Response response = call.execute();
 		switch(response.code()) 

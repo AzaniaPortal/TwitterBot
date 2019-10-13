@@ -27,6 +27,7 @@
             <artifactId>twitter4j-stream</artifactId>
             <version>4.0.7</version>
         </dependency>
+        
         <dependency>
             <groupId>org.twitter4j</groupId>
             <artifactId>twitter4j-stream</artifactId>
@@ -98,6 +99,11 @@
                 You can run jacoco in the default profile with:
                 mvn jacoco:prepare-agent test jacoco:report
             -->
+            <plugin>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-webapp-maven-plugin</artifactId>
+                <version>1.6.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
