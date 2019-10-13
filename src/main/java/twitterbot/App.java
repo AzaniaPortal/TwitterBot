@@ -1,7 +1,6 @@
 package twitterbot;
 
 import java.io.IOException;
-
 import twitter4j.FilterQuery;
 import twitter4j.MediaEntity;
 import twitter4j.StallWarning;
@@ -10,16 +9,15 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.TwitterStream;
-import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
+import twitterbot.controller.SMSController;
 import twitterbot.controller.SendToAPI;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
 import twitter4j.StatusUpdate;
 import twitter4j.TwitterStreamFactory;
-import twitter4j.auth.AccessToken;
 
-public final class App {
+public class App {
 
 	Twitter twitter;
 	TwitterFactory twitterFactory;
@@ -29,6 +27,7 @@ public final class App {
 		App app = new App();
 		app.initConfig();
 		app.listenOnTweets();
+		SMSController.main(args);
 	}
 
 	public void initConfig() {
@@ -151,11 +150,14 @@ public final class App {
 
 			if(responseCode == 200 && responseStatus.equals("success")) 
 			{
-				replyToPerson(inReplyToStatusId, "Hey @" + usersTwitterHandle  + "," + missingPersonName + " has been reported :) Get their missing report link here:");
+				replyToPerson(inReplyToStatusId, "Hey @" + usersTwitterHandle  + ", " + missingPersonName + " has been reported :) Get their missing report link here:");
 			} else if (responseCode == 200 && responseStatus.equals("failed")) 
 			{
-				replyToPerson(inReplyToStatusId, "Hi @" + usersTwitterHandle + "," + missingPersonName + " has already been reported sorry.");
-			} else {
+				replyToPerson(inReplyToStatusId, "Hi @" + usersTwitterHandle + ", " + missingPersonName + " has already been reported sorry.");
+			} else if(responseCode == 200 && responseStatus.equals("feedback")) {
+				replyToPerson(inReplyToStatusId, "Good News!!! @" + usersTwitterHandle + ", " + missingPersonName + " has been found :), love them better");
+			} 
+			else {
 				replyToPerson(inReplyToStatusId, "Hi @" + usersTwitterHandle + ", something has went wrong");
 			}
 			
@@ -181,7 +183,10 @@ public final class App {
 				
 				try {
 					Status status = twitter.showStatus(inReplyToStatusId);
-        			Status reply = twitter.updateStatus(new StatusUpdate(reply_text).inReplyToStatusId(status.getId()));
+					//reply to the tweet
+					Status reply = twitter.updateStatus(new StatusUpdate(reply_text).inReplyToStatusId(status.getId()));
+					//like the tweet
+					status = twitter.createFavorite(inReplyToStatusId);
 					//twitter.updateStatus(statusReply);
 				} catch (TwitterException ex) {
 					ex.printStackTrace();

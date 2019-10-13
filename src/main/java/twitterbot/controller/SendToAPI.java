@@ -1,8 +1,6 @@
 package twitterbot.controller;
 
-import java.io.Console;
 import java.io.IOException;
-
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -54,17 +52,9 @@ public class SendToAPI {
 		switch(response.code()) 
 		{
 			case 200: 
-				System.out.println("The person has been added: 200");
-				System.out.println(tweetId);
-				System.out.println(reporter);
-				System.out.println(name);
 				mainApp.reply(tweetId, reporter, 200, "success", name);
 				break;
 			case 422: 
-			System.out.println("The person has been found: 422");
-			System.out.println(tweetId);
-			System.out.println(reporter);
-			System.out.println(name);
 			mainApp.reply(tweetId, reporter, 200, "success", name);
 			break;
 			case 404:
