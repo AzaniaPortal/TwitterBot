@@ -22,7 +22,10 @@ public class SMSController
 	 */
 	@RequestMapping(value = "/found-person", method = RequestMethod.POST, consumes="application/json")
 	public String givePersonFoundFeedback(@RequestBody SMSFeedback userInfo) {
+		//give people feedback
 		mainApp.reply(Long.parseLong(userInfo.getTweet_id()) , userInfo.getPerson_handle(), 200, "feedback", userInfo.getMissing_person_name());
+
+		//give people feedback via sms
 		return "success";
 	}
 	

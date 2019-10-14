@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -16,7 +17,7 @@ import twitterbot.*;
 public class SendToAPI {
 		
 	static App mainApp = new App();
-	
+
 	final static String API_END_POINT = "https://thanos.fortresswire.com/api/report";
 	static OkHttpClient okHttpClient = new OkHttpClient()
 	.newBuilder()
@@ -41,19 +42,25 @@ public class SendToAPI {
 			.addQueryParameter("apitoken", "eff4891f43b24534376147ca02b49dbe")
 			.build();
 
-		final RequestBody requestBody = new FormBody.Builder()
-			.add("smsMessages", "We are testing")
-			.add("cellPhoneNumbers", "+27810759538")
-			.build();
+		// final RequestBody requestBody = new FormBody.Builder()
+		// 	.add("smsmessages", message)
+		// 	.add("cellPhoneNumbers", number)
+		// 	.build();
+		MediaType mediaType = MediaType.parse("application/json");
+		RequestBody requestBody = RequestBody.create(mediaType, "{\n \"smsmessages\": \"" + message+ "\",\n \"cellPhoneNumbers\": \"" + number+ "\"\n}");
 
+		System.out.println("Request body: " + requestBody);
 		Request request = new Request.Builder()
 			.url(HttpUrl)
-			.addHeader("Accept", "application/json")
+			.addHeader("Content-Type", "application/json")
 			.post(requestBody)
 			.build();
 		final Call call = okHttpClient.newCall(request);
 		try {
 			final Response response = call.execute();
+			System.out.println("SMS Response: " + response);
+			//close the connection
+			response.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
