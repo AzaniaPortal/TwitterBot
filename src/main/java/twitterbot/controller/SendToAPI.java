@@ -3,14 +3,8 @@ package twitterbot.controller;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+// Call; FormBody; HttpUrl; MediaType; OkHttpClient; Request; RequestBody and Response;
+import okhttp3.*;
 import twitterbot.*;
 
 public class SendToAPI {
@@ -18,6 +12,7 @@ public class SendToAPI {
 	static App mainApp = new App();
 
 	final static String API_END_POINT = "https://thanos.EXAMPLE.com/api/report";
+	//timeout was increased because a slow server was being used to test :) 
 	static OkHttpClient okHttpClient = new OkHttpClient()
 	.newBuilder()
     .connectTimeout(20,TimeUnit.SECONDS)
@@ -26,7 +21,7 @@ public class SendToAPI {
 	.build();
 
 	/**
-	 * 
+	 * function to request the api to send an sms to a user
 	 * @param message
 	 * @param number
 	 */
@@ -58,8 +53,8 @@ public class SendToAPI {
 		}
 	}
 	
-   /**
-	* 
+  /**
+	* send missing persons basic information over to the api
 	* @param name name of the lost person
 	* @param reporter twitter handle of the person who reported the missing person
 	* @param location last known location of the missing person
