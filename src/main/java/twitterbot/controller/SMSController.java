@@ -17,10 +17,12 @@ public class SMSController
 {
 
 	static App mainApp = new App();
+	@RequestMapping(value = "/found-person", method = RequestMethod.POST, consumes="application/json")
 	/**
 	 * Listen for feedback from the image recognition system.
+	 * @param userInfo
+	 * @return
 	 */
-	@RequestMapping(value = "/found-person", method = RequestMethod.POST, consumes="application/json")
 	public String givePersonFoundFeedback(@RequestBody SMSFeedback userInfo) {
 		//give people feedback
 		mainApp.reply(Long.parseLong(userInfo.getTweet_id()) , userInfo.getPerson_handle(), 200, "feedback", userInfo.getMissing_person_name());
